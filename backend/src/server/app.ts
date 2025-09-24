@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import { offeringRouter } from '../web/offering.routes';
-import { healthRouter } from '../web/health.routes';
+import { offeringRouter } from '../web/offering.routes.js';
+import { healthRouter } from '../web/health.routes.js';
 
 export function createApp() {
   const app = express();

@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { OfferingModel } from '../domain/offering.model';
-import { UserModel } from '../domain/user.model';
+import { OfferingModel } from '../domain/offering.model.js';
+import { UserModel } from '../domain/user.model.js';
 
 const listQuerySchema = z.object({
   q: z.string().optional(),

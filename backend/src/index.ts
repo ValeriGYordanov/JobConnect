@@ -8,7 +8,13 @@ dotenv.config();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
 
 async function start() {
-  await connectToDatabase();
+  try {
+    await connectToDatabase();
+    console.log('Connected to MongoDB');
+  } catch (err) {
+    console.warn('MongoDB connection failed, continuing without database:', err);
+  }
+  
   const app = createApp();
   const server = http.createServer(app);
 
