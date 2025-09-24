@@ -123,6 +123,15 @@ rm -rf node_modules package-lock.json
 npm install
 ```
 
+### "Cannot find module 'basic-auth'" Error
+```bash
+# This is a specific dependency issue with morgan
+cd backend
+rm -rf node_modules package-lock.json
+npm install
+npm run dev
+```
+
 ### MongoDB Connection Issues
 - Make sure MongoDB is running
 - Check your `MONGODB_URI` in `.env`

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listOfferings, createOffering, getOffering } from './offering.controllers.js';
+import { listOfferings, createOffering, getOffering } from './offering.controllers';
 
 export const offeringRouter = Router();
 
