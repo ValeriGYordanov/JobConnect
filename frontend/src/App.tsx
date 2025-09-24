@@ -3,9 +3,65 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { OfferingsPage } from './pages/OfferingsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminPage } from './pages/AdminPage';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
 import axios from 'axios';
+import { useState, useEffect } from 'react';
 
 export default function App() {
+  // User state management
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Debug user state changes
+  useEffect(() => {
+    console.log('User state changed:', user);
+  }, [user]);
+
+  // Check if user is logged in on app load
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        console.log('Checking auth with token:', token);
+        if (token) {
+          const response = await axios.get('/api/auth/profile', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          console.log('Auth check response:', response.data);
+          setUser(response.data.user);
+        }
+      } catch (error) {
+        console.log('Auth check failed:', error);
+        // Token is invalid, clear it
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // Logout function
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await axios.post('/api/auth/logout', {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+    }
+  };
+
   // Demo data generation
   const addDemoData = async () => {
     const jobTemplates = [
@@ -143,79 +199,166 @@ export default function App() {
                 </div>
               </Link>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <Link 
-                  to="/profile" 
-                  style={{ 
-                    padding: '0.75rem 1.5rem',
-                    fontSize: '0.875rem',
-                    fontWeight: '600',
-                    color: '#374151',
-                    textDecoration: 'none',
-                    borderRadius: '0.5rem',
-                    transition: 'all 0.2s',
-                    background: 'transparent'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = '#eff6ff';
-                    e.target.style.color = '#2563eb';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'transparent';
-                    e.target.style.color = '#374151';
-                  }}
-                >
-                  Profile
-                </Link>
-                <button
-                  onClick={addDemoData}
-                  style={{ 
-                    padding: '0.75rem 1.5rem',
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: 'white',
-                    fontSize: '0.875rem',
-                    fontWeight: '600',
-                    textDecoration: 'none',
-                    borderRadius: '0.75rem',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.2s',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                  }}
-                >
-                  Demo Data
-                </button>
-                <Link 
-                  to="/admin" 
-                  style={{ 
-                    padding: '0.75rem 1.5rem',
-                    background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
-                    color: 'white',
-                    fontSize: '0.875rem',
-                    fontWeight: '600',
-                    textDecoration: 'none',
-                    borderRadius: '0.75rem',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                  }}
-                >
-                  Admin
-                </Link>
+                {user ? (
+                  <>
+                    <span style={{ 
+                      fontSize: '0.875rem', 
+                      color: '#6b7280',
+                      fontWeight: '500'
+                    }}>
+                      Welcome, {user.username}!
+                    </span>
+                    <Link 
+                      to="/profile" 
+                      style={{ 
+                        padding: '0.75rem 1.5rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        color: '#374151',
+                        textDecoration: 'none',
+                        borderRadius: '0.5rem',
+                        transition: 'all 0.2s',
+                        background: 'transparent'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = '#eff6ff';
+                        e.target.style.color = '#2563eb';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = 'transparent';
+                        e.target.style.color = '#374151';
+                      }}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={addDemoData}
+                      style={{ 
+                        padding: '0.75rem 1.5rem',
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: 'white',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        borderRadius: '0.75rem',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.2s',
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      Demo Data
+                    </button>
+                    <Link 
+                      to="/admin" 
+                      style={{ 
+                        padding: '0.75rem 1.5rem',
+                        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+                        color: 'white',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        borderRadius: '0.75rem',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      Admin
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      style={{ 
+                        padding: '0.75rem 1.5rem',
+                        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                        color: 'white',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        borderRadius: '0.75rem',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.2s',
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link 
+                      to="/login" 
+                      style={{ 
+                        padding: '0.75rem 1.5rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        color: '#374151',
+                        textDecoration: 'none',
+                        borderRadius: '0.5rem',
+                        transition: 'all 0.2s',
+                        background: 'transparent'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = '#eff6ff';
+                        e.target.style.color = '#2563eb';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = 'transparent';
+                        e.target.style.color = '#374151';
+                      }}
+                    >
+                      Login
+                    </Link>
+                    <Link 
+                      to="/register" 
+                      style={{ 
+                        padding: '0.75rem 1.5rem',
+                        background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                        color: 'white',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        borderRadius: '0.75rem',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -223,6 +366,8 @@ export default function App() {
         <main style={{ flex: 1 }}>
           <Routes>
             <Route path="/" element={<OfferingsPage />} />
+            <Route path="/login" element={<LoginPage setUser={setUser} />} />
+            <Route path="/register" element={<RegisterPage setUser={setUser} />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>

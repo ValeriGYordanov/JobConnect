@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { offeringRouter } from '../web/offering.routes';
 import { healthRouter } from '../web/health.routes';
+import { authRouter } from '../web/auth.routes';
 
 export function createApp() {
   const app = express();
@@ -13,6 +14,7 @@ export function createApp() {
   app.use(morgan('dev'));
 
   app.use('/api/health', healthRouter);
+  app.use('/api/auth', authRouter);
   app.use('/api/offerings', offeringRouter);
 
   app.use((req, res) => {

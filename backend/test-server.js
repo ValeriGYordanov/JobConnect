@@ -83,6 +83,99 @@ app.get('/api/offerings', (req, res) => {
   res.json(offerings);
 });
 
+// Auth routes for demo
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+  
+  if (username === 'demo' && password === 'demo') {
+    const user = {
+      id: '1',
+      username: 'demo',
+      email: 'demo@jobconnect.com',
+      rating: 4.8,
+      completedJobs: 15,
+      createdAt: new Date().toISOString()
+    };
+    
+    res.cookie('token', 'demo-token-123', {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000
+    });
+    
+    res.json({
+      message: 'Login successful',
+      user,
+      token: 'demo-token-123'
+    });
+  } else {
+    res.status(401).json({ error: 'Invalid credentials' });
+  }
+});
+
+app.post('/api/auth/register', (req, res) => {
+  const { username, email, password } = req.body;
+  
+  if (username === 'demo' && email === 'demo@jobconnect.com') {
+    res.status(400).json({ error: 'User already exists' });
+    return;
+  }
+  
+  const newUser = {
+    id: (offerings.length + 1).toString(),
+    username,
+    email,
+    rating: 5.0,
+    completedJobs: 0,
+    createdAt: new Date().toISOString()
+  };
+  
+  res.cookie('token', 'demo-token-123', {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'strict',
+    maxAge: 24 * 60 * 60 * 1000
+  });
+  
+  res.status(201).json({
+    message: 'Registration successful',
+    user: newUser,
+    token: 'demo-token-123'
+  });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  res.clearCookie('token');
+  res.json({ message: 'Logout successful' });
+});
+
+app.get('/api/auth/profile', (req, res) => {
+  const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
+  
+  if (!token || token !== 'demo-token-123') {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+  
+  const user = {
+    id: '1',
+    username: 'demo',
+    email: 'demo@jobconnect.com',
+    rating: 4.8,
+    completedJobs: 15,
+    createdAt: new Date().toISOString()
+  };
+  
+  res.json({ user });
+});
+
+app.post('/api/auth/demo-user', (req, res) => {
+  res.json({
+    message: 'Demo user available',
+    user: { username: 'demo', password: 'demo' }
+  });
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Test server listening on http://localhost:${PORT}`);
