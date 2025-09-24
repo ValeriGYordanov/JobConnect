@@ -6,10 +6,11 @@ This guide will help your friend set up and run the JobConnect project on their 
 
 Before starting, make sure you have these installed:
 
-1. **Node.js** (v18 or higher)
+1. **Node.js** (v20.19+ or v22.12+ required)
    - Download from: https://nodejs.org/
-   - Choose the LTS version
+   - Choose the LTS version (22.12+ recommended)
    - This includes npm (Node Package Manager)
+   - ⚠️ **Important**: Vite requires Node.js 20.19+ or 22.12+
 
 2. **Git**
    - Download from: https://git-scm.com/
@@ -146,6 +147,23 @@ npm run dev
 - Make sure Node.js is installed
 - Restart your terminal
 - Try using `npx` instead of `npm`
+
+### "Vite requires Node.js version 20.19+ or 22.12+" Error
+```bash
+# Check your Node.js version
+node --version
+
+# If it's below 20.19, you need to upgrade Node.js
+# Download from: https://nodejs.org/
+# Install Node.js 22.12+ LTS version
+# Restart terminal after installation
+
+# Then clean install frontend dependencies
+cd frontend
+rm -rf node_modules package-lock.json
+npm install
+npm run dev
+```
 
 ## 📞 Need Help?
 
