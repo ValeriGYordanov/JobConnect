@@ -42,29 +42,407 @@ export function OfferingsPage() {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 grid md:grid-cols-2 gap-4">
-      <div>
-        <div className="flex gap-2 mb-3">
-          <input placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} className="border px-2 py-1 rounded w-full" />
-          <input placeholder="Min $/h" value={minPay} onChange={(e) => setMinPay(e.target.value)} className="border px-2 py-1 rounded w-24" />
-          <input placeholder="Max $/h" value={maxPay} onChange={(e) => setMaxPay(e.target.value)} className="border px-2 py-1 rounded w-24" />
-          <button onClick={fetchData} className="border px-3 py-1 rounded">Filter</button>
-        </div>
-        {loading && <div>Loading...</div>}
-        {error && <div className="text-red-600">{error}</div>}
-        {!loading && items.length === 0 && <div>No offerings found.</div>}
-        <ul className="space-y-3">
-          {items.map((o) => (
-            <li key={o._id} className="border rounded p-3">
-              <div className="font-medium">{o.label}</div>
-              <div className="text-sm text-gray-600">${o.paymentPerHour}/h · up to {o.maxHours}h · {o.applicationsCount} applicants</div>
-              {o.description && <p className="text-sm mt-1">{o.description}</p>}
-            </li>
-          ))}
-        </ul>
+    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem' }}>
+      {/* Hero Section */}
+      <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+        <h1 style={{ 
+          fontSize: '3rem', 
+          fontWeight: 'bold', 
+          background: 'linear-gradient(135deg, #1f2937 0%, #2563eb 50%, #7c3aed 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          marginBottom: '1rem'
+        }}>
+          Find Your Next Gig
+        </h1>
+        <p style={{ 
+          fontSize: '1.25rem', 
+          color: '#6b7280', 
+          maxWidth: '42rem', 
+          margin: '0 auto' 
+        }}>
+          Discover local opportunities in Sofia. Connect with people who need help, and earn money doing what you love.
+        </p>
       </div>
-      <div>
-        <MapView items={items} center={{ lat: 37.7749, lng: -122.4194 }} />
+
+      {/* Search and Filter Section */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: '1rem',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        padding: '2rem',
+        marginBottom: '2rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+            borderRadius: '0.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>Find Local Jobs</h2>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ 
+                position: 'absolute', 
+                top: '50%', 
+                left: '1rem', 
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none'
+              }}>
+                <svg width="20" height="20" fill="none" stroke="#9ca3af" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input 
+                placeholder="Search jobs by keywords..." 
+                value={q} 
+                onChange={(e) => setQ(e.target.value)} 
+                style={{
+                  width: '100%',
+                  paddingLeft: '3rem',
+                  paddingRight: '1rem',
+                  paddingTop: '1rem',
+                  paddingBottom: '1rem',
+                  background: 'rgba(249, 250, 251, 0.5)',
+                  border: '1px solid rgba(229, 231, 235, 0.5)',
+                  borderRadius: '0.75rem',
+                  fontSize: '1.125rem',
+                  outline: 'none',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(229, 231, 235, 0.5)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <input 
+              placeholder="Min BGN/h" 
+              value={minPay} 
+              onChange={(e) => setMinPay(e.target.value)} 
+              style={{
+                width: '144px',
+                padding: '1rem',
+                background: 'rgba(249, 250, 251, 0.5)',
+                border: '1px solid rgba(229, 231, 235, 0.5)',
+                borderRadius: '0.75rem',
+                outline: 'none',
+                transition: 'all 0.2s'
+              }}
+            />
+            <input 
+              placeholder="Max BGN/h" 
+              value={maxPay} 
+              onChange={(e) => setMaxPay(e.target.value)} 
+              style={{
+                width: '144px',
+                padding: '1rem',
+                background: 'rgba(249, 250, 251, 0.5)',
+                border: '1px solid rgba(229, 231, 235, 0.5)',
+                borderRadius: '0.75rem',
+                outline: 'none',
+                transition: 'all 0.2s'
+              }}
+            />
+            <button 
+              onClick={fetchData} 
+              style={{
+                padding: '1rem 2rem',
+                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                color: 'white',
+                fontWeight: '600',
+                borderRadius: '0.75rem',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+              }}
+            >
+              Search
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Map Section */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: '1rem',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        padding: '2rem',
+        marginBottom: '2rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
+            borderRadius: '0.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>Job Locations</h2>
+        </div>
+        <div style={{ padding: '0.5rem' }}>
+          <MapView items={items} center={{ lat: 42.694558, lng: 23.322851 }} />
+        </div>
+      </div>
+
+      {/* Job Listings Section */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: '1rem',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        padding: '2rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+              borderRadius: '0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+              </svg>
+            </div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>Available Jobs</h2>
+          </div>
+          <div style={{
+            padding: '0.5rem 1rem',
+            background: 'linear-gradient(135deg, #dbeafe 0%, #e9d5ff 100%)',
+            borderRadius: '9999px'
+          }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+              {items.length} opportunities
+            </span>
+          </div>
+        </div>
+        
+        {loading && (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem 0' }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                border: '4px solid #dbeafe',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '48px',
+                height: '48px',
+                border: '4px solid transparent',
+                borderTop: '4px solid #3b82f6',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }}></div>
+            </div>
+          </div>
+        )}
+        
+        {error && (
+          <div style={{
+            background: 'rgba(254, 242, 242, 0.8)',
+            border: '1px solid rgba(252, 165, 165, 0.5)',
+            color: '#dc2626',
+            padding: '1.5rem',
+            borderRadius: '0.75rem',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              {error}
+            </div>
+          </div>
+        )}
+        
+        {!loading && items.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+            <div style={{
+              width: '96px',
+              height: '96px',
+              background: '#f3f4f6',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1rem'
+            }}>
+              <svg width="48" height="48" fill="none" stroke="#9ca3af" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+              No jobs found
+            </h3>
+            <p style={{ color: '#6b7280' }}>
+              Try adjusting your search filters to find more opportunities.
+            </p>
+          </div>
+        )}
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {items.map((o) => (
+            <div key={o._id} style={{
+              background: 'rgba(255, 255, 255, 0.6)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.4)',
+              borderRadius: '1rem',
+              padding: '2rem',
+              transition: 'all 0.3s',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.8)';
+              e.target.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
+              e.target.style.transform = 'translateY(-4px)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.6)';
+              e.target.style.boxShadow = 'none';
+              e.target.style.transform = 'translateY(0)';
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ 
+                    fontSize: '1.5rem', 
+                    fontWeight: 'bold', 
+                    color: '#1f2937', 
+                    marginBottom: '0.75rem',
+                    transition: 'color 0.2s'
+                  }}>
+                    {o.label}
+                  </h3>
+                  {o.description && (
+                    <p style={{ color: '#6b7280', fontSize: '1.125rem', lineHeight: '1.75' }}>
+                      {o.description}
+                    </p>
+                  )}
+                </div>
+                <div style={{ textAlign: 'right', marginLeft: '1.5rem' }}>
+                  <div style={{ 
+                    fontSize: '1.875rem', 
+                    fontWeight: 'bold', 
+                    background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}>
+                    {o.paymentPerHour} BGN/h
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280', fontWeight: '500' }}>
+                    up to {o.maxHours}h
+                  </div>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', color: '#6b7280' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      background: '#dbeafe',
+                      borderRadius: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <svg width="16" height="16" fill="#2563eb" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    Sofia, Bulgaria
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      background: '#e9d5ff',
+                      borderRadius: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <svg width="16" height="16" fill="#8b5cf6" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    {o.applicationsCount} applicants
+                  </span>
+                </div>
+                <button style={{
+                  padding: '0.75rem 2rem',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                  color: 'white',
+                  fontWeight: '600',
+                  borderRadius: '0.75rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                }}>
+                  Apply Now
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

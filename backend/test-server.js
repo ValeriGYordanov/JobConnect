@@ -10,7 +10,65 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/offerings', (req, res) => {
-  res.json([]);
+  const sampleOfferings = [
+    {
+      _id: '1',
+      type: 'job',
+      label: 'I need a person to mow my yard',
+      description: 'I struggle with mowing due to my disabilities so I would need someone to help me.',
+      location: { lat: 42.694558, lng: 23.322851 },
+      paymentPerHour: 15,
+      maxHours: 2,
+      applicationsCount: 3,
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: '2',
+      type: 'job',
+      label: 'Help with moving furniture',
+      description: 'Need assistance moving a few heavy items to the new apartment.',
+      location: { lat: 42.6977, lng: 23.3219 },
+      paymentPerHour: 20,
+      maxHours: 3,
+      applicationsCount: 1,
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: '3',
+      type: 'job',
+      label: 'Garden cleanup and pruning',
+      description: 'Looking for someone to clean up the garden and prune the bushes.',
+      location: { lat: 42.6915, lng: 23.3250 },
+      paymentPerHour: 12,
+      maxHours: 4,
+      applicationsCount: 0,
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: '4',
+      type: 'job',
+      label: 'Pet walking service',
+      description: 'Need someone to walk my dog twice a day for a week.',
+      location: { lat: 42.6960, lng: 23.3200 },
+      paymentPerHour: 10,
+      maxHours: 1,
+      applicationsCount: 5,
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: '5',
+      type: 'job',
+      label: 'House cleaning before guests arrive',
+      description: 'Deep cleaning needed for upcoming family visit.',
+      location: { lat: 42.6925, lng: 23.3245 },
+      paymentPerHour: 18,
+      maxHours: 5,
+      applicationsCount: 2,
+      createdAt: new Date().toISOString()
+    }
+  ];
+  
+  res.json(sampleOfferings);
 });
 
 const PORT = process.env.PORT || 4000;

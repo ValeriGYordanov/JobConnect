@@ -1,153 +1,202 @@
-# C2C Job Offerings Library
+# JobConnect - C2C Job Marketplace
 
-A modular web library for displaying consumer-to-consumer daily job offerings, similar to Airbnb but for temporary jobs.
+A modern, modular web library for connecting people with local job opportunities. Built with React, Node.js, and MongoDB.
 
-## Features
-
-- **Offering Management**: Create and display job offerings with location, payment, and time details
-- **Map Integration**: Leaflet-based map view with OpenStreetMap
-- **Search & Filter**: Filter by location, payment range, and keywords
-- **User System**: User profiles with ratings (placeholder)
-- **Admin Dashboard**: Moderation tools (placeholder)
-- **Modular Design**: Abstract "Offering" model supports future expansion (rentals, courses, etc.)
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js (LTS version)
-- MongoDB (local or Atlas)
+Before running this project, make sure you have the following installed:
 
-### Installation
+- **Node.js** (v18 or higher) - [Download here](https://nodejs.org/)
+- **npm** (comes with Node.js)
+- **Git** - [Download here](https://git-scm.com/)
+- **MongoDB** (optional - see setup options below)
 
-1. **Clone and install dependencies:**
-   ```bash
-   git clone <your-repo>
-   cd JobOffers
-   
-   # Backend
-   cd backend
-   npm install
-   
-   # Frontend  
-   cd ../frontend
-   npm install
-   ```
+### 📋 Step-by-Step Setup
 
-2. **Set up environment:**
-   ```bash
-   # Copy backend environment template
-   cp backend/.env.example backend/.env
-   # Edit backend/.env with your MongoDB URI
-   ```
-
-3. **Start development servers:**
-   ```bash
-   # Terminal 1 - Backend API
-   cd backend
-   npm run dev
-   
-   # Terminal 2 - Frontend
-   cd frontend  
-   npm run dev
-   ```
-
-4. **Access the application:**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:4000
-
-### Database Setup
-
-**Option 1: Local MongoDB with Docker**
+#### 1. Clone the Repository
 ```bash
-docker compose up -d mongo
+git clone <your-repository-url>
+cd JobOffers
 ```
 
-**Option 2: MongoDB Atlas (Cloud)**
-1. Create free account at https://cloud.mongodb.com
-2. Create cluster and get connection string
-3. Update `MONGODB_URI` in `backend/.env`
-
-**Option 3: Local MongoDB Installation**
+#### 2. Install Backend Dependencies
 ```bash
-# macOS with Homebrew
-brew install mongodb-community
-brew services start mongodb-community
+cd backend
+npm install
 ```
 
-## Project Structure
+#### 3. Install Frontend Dependencies
+```bash
+cd ../frontend
+npm install
+```
+
+#### 4. Set Up Environment Variables
+
+Create a `.env` file in the `backend` directory:
+```bash
+cd ../backend
+cp .env.example .env
+```
+
+Edit the `.env` file with your configuration:
+```env
+PORT=4000
+MONGODB_URI=mongodb://localhost:27017/jobconnect
+JWT_SECRET=your-super-secret-jwt-key-here
+```
+
+#### 5. Start MongoDB (Choose one option)
+
+**Option A: Using Docker (Recommended)**
+```bash
+# From the project root directory
+docker-compose up -d
+```
+
+**Option B: Local MongoDB Installation**
+- Install MongoDB locally
+- Start MongoDB service
+- The app will connect to `mongodb://localhost:27017/jobconnect`
+
+**Option C: MongoDB Atlas (Cloud)**
+- Create a free account at [MongoDB Atlas](https://www.mongodb.com/atlas)
+- Create a cluster and get your connection string
+- Update `MONGODB_URI` in `.env` with your Atlas connection string
+
+#### 6. Start the Backend Server
+```bash
+cd backend
+npm run dev
+```
+The backend will start on `http://localhost:4000`
+
+#### 7. Start the Frontend Development Server
+```bash
+# Open a new terminal window
+cd frontend
+npm run dev
+```
+The frontend will start on `http://localhost:5173`
+
+#### 8. Open the Application
+Visit `http://localhost:5173` in your browser to see the application!
+
+## 🏗️ Project Structure
 
 ```
 JobOffers/
-├── backend/                 # Express.js API server
+├── backend/                 # Node.js/Express API
 │   ├── src/
-│   │   ├── domain/         # Data models (User, Offering, Application, Rating)
-│   │   ├── server/         # App setup and MongoDB connection
-│   │   └── web/            # API routes and controllers
-│   └── package.json
-├── frontend/               # React + Vite application
+│   │   ├── domain/         # Database models
+│   │   ├── server/         # Server configuration
+│   │   └── web/           # API routes and controllers
+│   ├── package.json
+│   └── .env               # Environment variables
+├── frontend/              # React frontend
 │   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── pages/          # Page components
-│   │   └── App.tsx         # Main app with routing
+│   │   ├── components/    # React components
+│   │   ├── pages/        # Page components
+│   │   └── App.tsx       # Main app component
 │   └── package.json
-└── docker-compose.yml      # MongoDB container
+├── docker-compose.yml     # MongoDB Docker setup
+└── README.md
 ```
 
-## API Endpoints
+## 🛠️ Available Scripts
 
-- `GET /api/health` - Health check
-- `GET /api/offerings` - List offerings (with query params for filtering)
-- `POST /api/offerings` - Create new offering
-- `GET /api/offerings/:id` - Get specific offering
-
-## Technology Stack
-
-- **Frontend**: React 19, TypeScript, Vite, TailwindCSS, Leaflet
-- **Backend**: Node.js, Express, TypeScript, MongoDB, Mongoose
-- **Maps**: Leaflet with OpenStreetMap (free)
-- **UI**: TailwindCSS for responsive design
-
-## Development
-
-### Backend Development
+### Backend Scripts
 ```bash
 cd backend
-npm run dev    # Start with nodemon
-npm run build  # Compile TypeScript
-npm start      # Run compiled JS
+npm run dev      # Start development server with hot reload
+npm run build    # Build for production
+npm run start    # Start production server
 ```
 
-### Frontend Development  
+### Frontend Scripts
 ```bash
 cd frontend
-npm run dev    # Start Vite dev server
-npm run build  # Build for production
-npm run preview # Preview production build
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run preview  # Preview production build
 ```
 
-## Next Steps
+## 🔧 Configuration
 
-1. **Add MongoDB**: Set up database connection
-2. **Seed Data**: Add sample offerings for testing
-3. **Authentication**: Implement user login/registration
-4. **Widget Mode**: Build embeddable JavaScript widget
-5. **Payments**: Add Stripe/PayPal integration placeholders
-6. **WordPress Plugin**: Create WordPress integration
+### Environment Variables
 
-## Environment Variables
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Backend server port | `4000` |
+| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/jobconnect` |
+| `JWT_SECRET` | Secret key for JWT tokens | Required |
 
-Create `backend/.env`:
+### MongoDB Setup Options
+
+1. **Docker (Easiest)**: Run `docker-compose up -d`
+2. **Local Installation**: Install MongoDB locally
+3. **MongoDB Atlas**: Use cloud MongoDB service
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+**1. Port Already in Use**
+```bash
+# Kill processes using ports 4000 or 5173
+lsof -ti:4000 | xargs kill -9
+lsof -ti:5173 | xargs kill -9
 ```
-PORT=4000
-MONGODB_URI=mongodb://localhost:27017/joboffers
-JWT_SECRET=your-secret-key
+
+**2. MongoDB Connection Issues**
+- Make sure MongoDB is running
+- Check your `MONGODB_URI` in `.env`
+- For Docker: `docker-compose logs mongodb`
+
+**3. Node Modules Issues**
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
 ```
 
-## Contributing
+**4. Frontend Not Loading**
+- Check if backend is running on port 4000
+- Check browser console for errors
+- Verify Vite proxy configuration
 
-This is a modular library designed for easy integration into other websites. The abstract "Offering" model allows for future expansion to other types of C2C services.
+### Getting Help
 
-## License
+If you encounter issues:
+1. Check the console logs for error messages
+2. Ensure all dependencies are installed
+3. Verify environment variables are set correctly
+4. Make sure MongoDB is running and accessible
 
-MIT
+## 🎯 Features
+
+- ✅ **Modern UI**: Glassmorphism design with smooth animations
+- ✅ **Interactive Map**: Leaflet map with job location markers
+- ✅ **Job Listings**: Search and filter job opportunities
+- ✅ **Responsive Design**: Works on desktop and mobile
+- ✅ **Real-time Data**: Live job data from API
+- ✅ **Modular Architecture**: Easy to extend and customize
+
+## 🔮 Next Steps
+
+- [ ] User authentication system
+- [ ] User profiles and dashboards
+- [ ] Admin panel for job management
+- [ ] Payment integration
+- [ ] Mobile app
+- [ ] WordPress widget
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+---
+
+**Need help?** Check the troubleshooting section above or create an issue in the repository.
