@@ -8,7 +8,44 @@ type Item = {
   paymentPerHour: number;
 };
 
-export function MapView({ items, center }: { items: Item[]; center: Point }) {
+export function MapView({ items, center }: { items: Item[]; center?: Point }) {
+  // Default center to Sofia, Bulgaria
+  const defaultCenter = { lat: 42.6977, lng: 23.3219 };
+  const mapCenter = center || defaultCenter;
+  
+  // Filter out items with invalid locations
+  const validItems = items.filter(item => 
+    item && 
+    item.location && 
+    typeof item.location.lat === 'number' && 
+    typeof item.location.lng === 'number' &&
+    !isNaN(item.location.lat) && 
+    !isNaN(item.location.lng)
+  );
+
+  if (validItems.length === 0) {
+    return (
+      <div style={{
+        width: '100%',
+        height: '600px',
+        borderRadius: '1rem',
+        overflow: 'hidden',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        border: '1px solid rgba(255, 255, 255, 0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(249, 250, 251, 0.5)',
+        color: '#6b7280'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>No valid locations to display</p>
+          <p style={{ fontSize: '0.875rem' }}>Please check that job offerings have valid coordinates</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       width: '100%',
@@ -18,12 +55,12 @@ export function MapView({ items, center }: { items: Item[]; center: Point }) {
       boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
       border: '1px solid rgba(255, 255, 255, 0.3)'
     }}>
-      <MapContainer center={[center.lat, center.lng]} zoom={13} style={{ width: '100%', height: '100%' }}>
+      <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={13} style={{ width: '100%', height: '100%' }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {items.map((o) => (
+        {validItems.map((o) => (
           <Marker key={o._id} position={[o.location.lat, o.location.lng]}>
             <Popup>
               <div style={{ padding: '1rem', minWidth: '280px' }}>

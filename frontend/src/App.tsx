@@ -1,10 +1,16 @@
 import './index.css';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { OfferingsPage } from './pages/OfferingsPage';
-import { ProfilePage } from './pages/ProfilePage';
+// import { ProfilePage } from './pages/ProfilePage';
 import { AdminPage } from './pages/AdminPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { SubNavigation } from './components/SubNavigation';
+
+type TabType = 'home' | 'job-offerings' | 'users' | 'placeholder';
+import { HomeTab } from './components/tabs/HomeTab';
+import { JobOfferingsTab } from './components/tabs/JobOfferingsTab';
+import { UsersTab } from './components/tabs/UsersTab';
+import { PlaceholderTab } from './components/tabs/PlaceholderTab';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 
@@ -12,6 +18,7 @@ export default function App() {
   // User state management
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>('home');
 
 
   // Debug user state changes
@@ -69,6 +76,22 @@ export default function App() {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setUser(null);
+    }
+  };
+
+  // Render tab content
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'home':
+        return <HomeTab />;
+      case 'job-offerings':
+        return <JobOfferingsTab />;
+      case 'users':
+        return <UsersTab />;
+      case 'placeholder':
+        return <PlaceholderTab />;
+      default:
+        return <HomeTab />;
     }
   };
 
@@ -255,14 +278,16 @@ export default function App() {
                         transition: 'all 0.2s',
                         background: 'transparent'
                       }}
-                      onMouseEnter={(e) => {
-                        e.target.style.background = '#eff6ff';
-                        e.target.style.color = '#2563eb';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.background = 'transparent';
-                        e.target.style.color = '#374151';
-                      }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLAnchorElement;
+                            target.style.background = '#eff6ff';
+                            target.style.color = '#2563eb';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLAnchorElement;
+                            target.style.background = 'transparent';
+                            target.style.color = '#374151';
+                          }}
                     >
                       Profile
                     </Link>
@@ -281,14 +306,16 @@ export default function App() {
                         border: 'none',
                         cursor: 'pointer'
                       }}
-                      onMouseEnter={(e) => {
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                      }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.transform = 'translateY(-2px)';
+                            target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.transform = 'translateY(0)';
+                            target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                          }}
                     >
                       Demo Data
                     </button>
@@ -305,14 +332,16 @@ export default function App() {
                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                         transition: 'all 0.2s'
                       }}
-                      onMouseEnter={(e) => {
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                      }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.transform = 'translateY(-2px)';
+                            target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.transform = 'translateY(0)';
+                            target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                          }}
                     >
                       Admin
                     </Link>
@@ -331,14 +360,16 @@ export default function App() {
                         border: 'none',
                         cursor: 'pointer'
                       }}
-                      onMouseEnter={(e) => {
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                      }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.transform = 'translateY(-2px)';
+                            target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.transform = 'translateY(0)';
+                            target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                          }}
                     >
                       Logout
                     </button>
@@ -357,14 +388,16 @@ export default function App() {
                         transition: 'all 0.2s',
                         background: 'transparent'
                       }}
-                      onMouseEnter={(e) => {
-                        e.target.style.background = '#eff6ff';
-                        e.target.style.color = '#2563eb';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.background = 'transparent';
-                        e.target.style.color = '#374151';
-                      }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLAnchorElement;
+                            target.style.background = '#eff6ff';
+                            target.style.color = '#2563eb';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLAnchorElement;
+                            target.style.background = 'transparent';
+                            target.style.color = '#374151';
+                          }}
                     >
                       Login
                     </Link>
@@ -381,14 +414,16 @@ export default function App() {
                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                         transition: 'all 0.2s'
                       }}
-                      onMouseEnter={(e) => {
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                      }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.transform = 'translateY(-2px)';
+                            target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.transform = 'translateY(0)';
+                            target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                          }}
                     >
                       Sign Up
                     </Link>
@@ -398,15 +433,20 @@ export default function App() {
             </div>
           </div>
         </header>
-        <main style={{ flex: 1 }}>
-          <Routes>
-            <Route path="/" element={<OfferingsPage />} />
-            <Route path="/login" element={<LoginPage setUser={setUser} />} />
-            <Route path="/register" element={<RegisterPage setUser={setUser} />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/admin" element={<AdminPage />} />
-          </Routes>
-        </main>
+            <main style={{ flex: 1 }}>
+              <Routes>
+                <Route path="/" element={
+                  <>
+                    <SubNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+                    {renderTabContent()}
+                  </>
+                } />
+                <Route path="/login" element={<LoginPage setUser={setUser} />} />
+                <Route path="/register" element={<RegisterPage setUser={setUser} />} />
+                {/* <Route path="/profile" element={<ProfilePage />} /> */}
+                <Route path="/admin" element={<AdminPage />} />
+              </Routes>
+            </main>
         <footer style={{ 
           background: 'linear-gradient(135deg, #111827 0%, #1f2937 100%)',
           color: 'white',
