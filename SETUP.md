@@ -79,9 +79,11 @@ docker-compose up -d
 ### Step 6: Start the Backend Server
 ```bash
 cd backend
-npm run dev
+node test-server.js
 ```
-You should see: `API listening on http://localhost:4000`
+You should see: `Test server listening on http://localhost:4000`
+
+**Note:** The test server includes 8 sample job offerings by default!
 
 ### Step 7: Start the Frontend Server
 Open a **new terminal window** and run:
@@ -165,6 +167,24 @@ npm install
 npm run dev
 ```
 
+### "PostCSS TailwindCSS plugin" Error
+```bash
+# Install the correct PostCSS plugin
+cd frontend
+npm install @tailwindcss/postcss
+
+# Update postcss.config.js to use:
+# export default {
+#   plugins: {
+#     '@tailwindcss/postcss': {},
+#     autoprefixer: {},
+#   },
+# }
+
+# Restart the server
+npm run dev
+```
+
 ## 📞 Need Help?
 
 If you run into issues:
@@ -177,11 +197,13 @@ If you run into issues:
 ## 🎯 What You Should See
 
 The application should display:
-- **Header**: "JobConnect" logo with Profile and Admin buttons
+- **Header**: "JobConnect" logo with Profile, Demo Data, and Admin buttons
 - **Hero Section**: "Find Your Next Gig" with description
 - **Search Section**: Search bar with filters
 - **Map Section**: Interactive map with job markers
 - **Jobs List**: Cards showing available jobs with details
+
+**💡 Pro Tip**: Click the "Demo Data" button to add 3 random job offerings instantly!
 
 The design should look modern and professional with:
 - Glassmorphism effects (frosted glass look)

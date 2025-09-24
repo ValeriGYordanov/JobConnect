@@ -3,8 +3,103 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { OfferingsPage } from './pages/OfferingsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminPage } from './pages/AdminPage';
+import axios from 'axios';
 
 export default function App() {
+  // Demo data generation
+  const addDemoData = async () => {
+    const jobTemplates = [
+      {
+        labels: [
+          'Help with moving furniture',
+          'Garden cleanup and pruning',
+          'House cleaning service',
+          'Pet walking service',
+          'Computer setup assistance',
+          'Painting a small room',
+          'Grocery shopping help',
+          'Yard maintenance work',
+          'Tutoring in mathematics',
+          'Photography for event',
+          'Car maintenance help',
+          'Language practice partner',
+          'IKEA furniture assembly',
+          'Deep cleaning service',
+          'Dog grooming assistance'
+        ],
+        descriptions: [
+          'Need assistance with this task. All necessary tools and materials will be provided.',
+          'Looking for someone reliable and experienced. Will provide refreshments and lunch.',
+          'This is a great opportunity for someone who enjoys this type of work.',
+          'Perfect for someone with experience in this area. Flexible timing available.',
+          'Need help with this project. Previous experience preferred but not required.',
+          'Looking for someone who can work independently. All supplies provided.',
+          'This job requires attention to detail and good communication skills.',
+          'Great opportunity for someone who enjoys working outdoors.',
+          'Need someone patient and experienced. Will provide all necessary materials.',
+          'Looking for someone who can work efficiently and follow instructions well.'
+        ]
+      }
+    ];
+
+    const locations = [
+      { lat: 42.694558, lng: 23.322851 },
+      { lat: 42.6977, lng: 23.3219 },
+      { lat: 42.6915, lng: 23.3250 },
+      { lat: 42.6960, lng: 23.3200 },
+      { lat: 42.6925, lng: 23.3245 },
+      { lat: 42.6950, lng: 23.3230 },
+      { lat: 42.6930, lng: 23.3215 },
+      { lat: 42.6980, lng: 23.3220 },
+      { lat: 42.6940, lng: 23.3235 },
+      { lat: 42.6965, lng: 23.3210 }
+    ];
+
+    const requestorNames = [
+      'Maria Petrov', 'Ivan Dimitrov', 'Elena Stoyanova', 'Petar Georgiev',
+      'Anna Nikolova', 'Dimitar Petrov', 'Sofia Ivanova', 'Georgi Stoyanov',
+      'Viktor Todorov', 'Nadezhda Petrova', 'Krasimir Stoyanov', 'Boris Dimitrov',
+      'Milena Georgieva', 'Todor Petrov', 'Radka Stoyanova'
+    ];
+
+    try {
+      // Generate 3 random job offerings
+      for (let i = 0; i < 3; i++) {
+        const randomLabel = jobTemplates[0].labels[Math.floor(Math.random() * jobTemplates[0].labels.length)];
+        const randomDescription = jobTemplates[0].descriptions[Math.floor(Math.random() * jobTemplates[0].descriptions.length)];
+        const randomLocation = locations[Math.floor(Math.random() * locations.length)];
+        const randomRequestor = requestorNames[Math.floor(Math.random() * requestorNames.length)];
+        
+        const newOffering = {
+          type: 'job',
+          label: randomLabel,
+          description: randomDescription,
+          location: randomLocation,
+          paymentPerHour: Math.floor(Math.random() * 20) + 10, // 10-30 BGN/h
+          maxHours: Math.floor(Math.random() * 5) + 1, // 1-6 hours
+          applicationsCount: Math.floor(Math.random() * 6), // 0-5 applicants
+          requestor: {
+            name: randomRequestor,
+            rating: (Math.random() * 1.5 + 3.5).toFixed(1), // 3.5-5.0 rating
+            completedJobs: Math.floor(Math.random() * 30) + 1 // 1-30 completed jobs
+          }
+        };
+
+        await axios.post('/api/offerings', newOffering);
+      }
+      
+      // Show success message
+      alert('✅ 3 new demo job offerings added successfully!');
+      
+      // Refresh the page to show new data
+      window.location.reload();
+      
+    } catch (error) {
+      console.error('Error adding demo data:', error);
+      alert('❌ Failed to add demo data. Make sure the backend server is running.');
+    }
+  };
+
   return (
     <BrowserRouter>
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
@@ -71,6 +166,32 @@ export default function App() {
                 >
                   Profile
                 </Link>
+                <button
+                  onClick={addDemoData}
+                  style={{ 
+                    padding: '0.75rem 1.5rem',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    borderRadius: '0.75rem',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    transition: 'all 0.2s',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                  }}
+                >
+                  Demo Data
+                </button>
                 <Link 
                   to="/admin" 
                   style={{ 
