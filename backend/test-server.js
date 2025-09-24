@@ -80,7 +80,81 @@ app.post('/api/offerings', (req, res) => {
 });
 
 app.get('/api/offerings', (req, res) => {
-  res.json(offerings);
+  let filteredOfferings = [...offerings];
+  
+  // Search functionality
+  const search = req.query.search;
+  if (search) {
+    const searchLower = search.toLowerCase();
+    filteredOfferings = filteredOfferings.filter(offering => 
+      offering.label.toLowerCase().includes(searchLower) ||
+      offering.description.toLowerCase().includes(searchLower)
+    );
+  }
+  
+  // Filter by payment range
+  const minPayment = parseFloat(req.query.minPayment);
+  const maxPayment = parseFloat(req.query.maxPayment);
+  if (!isNaN(minPayment)) {
+    filteredOfferings = filteredOfferings.filter(offering => offering.paymentPerHour >= minPayment);
+  }
+  if (!isNaN(maxPayment)) {
+    filteredOfferings = filteredOfferings.filter(offering => offering.paymentPerHour <= maxPayment);
+  }
+  
+  // Filter by max hours
+  const maxHours = parseFloat(req.query.maxHours);
+  if (!isNaN(maxHours)) {
+    filteredOfferings = filteredOfferings.filter(offering => offering.maxHours <= maxHours);
+  }
+  
+  // Filter by applications count
+  const hasApplications = req.query.hasApplications;
+  if (hasApplications === 'true') {
+    filteredOfferings = filteredOfferings.filter(offering => offering.applicationsCount > 0);
+  } else if (hasApplications === 'false') {
+    filteredOfferings = filteredOfferings.filter(offering => offering.applicationsCount === 0);
+  }
+  
+  // Sort functionality
+  const sortBy = req.query.sortBy;
+  const sortOrder = req.query.sortOrder || 'asc';
+  
+  if (sortBy === 'payment') {
+    filteredOfferings.sort((a, b) => {
+      return sortOrder === 'asc' ? a.paymentPerHour - b.paymentPerHour : b.paymentPerHour - a.paymentPerHour;
+    });
+  } else if (sortBy === 'hours') {
+    filteredOfferings.sort((a, b) => {
+      return sortOrder === 'asc' ? a.maxHours - b.maxHours : b.maxHours - a.maxHours;
+    });
+  } else if (sortBy === 'applications') {
+    filteredOfferings.sort((a, b) => {
+      return sortOrder === 'asc' ? a.applicationsCount - b.applicationsCount : b.applicationsCount - a.applicationsCount;
+    });
+  } else if (sortBy === 'date') {
+    filteredOfferings.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+  }
+  
+  // Pagination
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  
+  const paginatedOfferings = filteredOfferings.slice(startIndex, endIndex);
+  
+  res.json({
+    offerings: paginatedOfferings,
+    total: filteredOfferings.length,
+    page,
+    limit,
+    totalPages: Math.ceil(filteredOfferings.length / limit)
+  });
 });
 
 // Auth routes for demo

@@ -13,6 +13,7 @@ export default function App() {
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+
   // Debug user state changes
   useEffect(() => {
     console.log('User state changed:', user);
@@ -26,7 +27,8 @@ export default function App() {
         console.log('Checking auth with token:', token);
         if (token) {
           const response = await axios.get('/api/auth/profile', {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 5000 // 5 second timeout
           });
           console.log('Auth check response:', response.data);
           setUser(response.data.user);
@@ -41,7 +43,15 @@ export default function App() {
       }
     };
 
+    // Add a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.log('Auth check timeout, setting loading to false');
+      setIsLoading(false);
+    }, 3000); // 3 second timeout
+
     checkAuth();
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // Logout function
@@ -155,6 +165,31 @@ export default function App() {
       alert('❌ Failed to add demo data. Make sure the backend server is running.');
     }
   };
+
+  // Show loading screen while checking authentication
+  if (isLoading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        flexDirection: 'column',
+        gap: '1rem'
+      }}>
+        <div style={{
+          border: '4px solid rgba(59, 130, 246, 0.2)',
+          borderTop: '4px solid #3b82f6',
+          borderRadius: '50%',
+          width: '50px',
+          height: '50px',
+          animation: 'spin 1s linear infinite'
+        }}></div>
+        <p style={{ color: '#6b7280', fontSize: '1.125rem' }}>Loading JobConnect...</p>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>

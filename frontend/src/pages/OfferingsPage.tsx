@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { MapView } from '../components/MapView';
+import { SearchFilter } from '../components/SearchFilter';
+
+// Define SearchFilters interface locally to avoid import issues
+interface SearchFilters {
+  search: string;
+  minPayment: number | null;
+  maxPayment: number | null;
+  maxHours: number | null;
+  hasApplications: string;
+  sortBy: string;
+  sortOrder: string;
+}
 
 type Offering = {
   _id: string;
@@ -17,19 +29,48 @@ export function OfferingsPage() {
   const [items, setItems] = useState<Offering[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [q, setQ] = useState('');
-  const [minPay, setMinPay] = useState('');
-  const [maxPay, setMaxPay] = useState('');
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [filters, setFilters] = useState<SearchFilters>({
+    search: '',
+    minPayment: null,
+    maxPayment: null,
+    maxHours: null,
+    hasApplications: '',
+    sortBy: 'date',
+    sortOrder: 'desc'
+  });
 
-  async function fetchData() {
+  async function fetchData(searchFilters?: SearchFilters) {
     try {
       setLoading(true);
+      const activeFilters = searchFilters || filters;
       const params: any = {};
-      if (q) params.q = q;
-      if (minPay) params.minPay = Number(minPay);
-      if (maxPay) params.maxPay = Number(maxPay);
+      
+      if (activeFilters.search) params.search = activeFilters.search;
+      if (activeFilters.minPayment !== null) params.minPayment = activeFilters.minPayment;
+      if (activeFilters.maxPayment !== null) params.maxPayment = activeFilters.maxPayment;
+      if (activeFilters.maxHours !== null) params.maxHours = activeFilters.maxHours;
+      if (activeFilters.hasApplications) params.hasApplications = activeFilters.hasApplications;
+      if (activeFilters.sortBy) params.sortBy = activeFilters.sortBy;
+      if (activeFilters.sortOrder) params.sortOrder = activeFilters.sortOrder;
+      
+      params.page = currentPage;
+      params.limit = 10;
+      
       const res = await axios.get('/api/offerings', { params });
-      setItems(res.data);
+      
+      if (res.data.offerings) {
+        setItems(res.data.offerings);
+        setTotalCount(res.data.total);
+        setTotalPages(res.data.totalPages);
+      } else {
+        // Fallback for old API format
+        setItems(res.data);
+        setTotalCount(res.data.length);
+        setTotalPages(1);
+      }
     } catch (e: any) {
       setError(e?.message || 'Failed to load');
     } finally {
@@ -39,7 +80,28 @@ export function OfferingsPage() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage]);
+
+  const handleSearch = (newFilters: SearchFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+    fetchData(newFilters);
+  };
+
+  const handleClear = () => {
+    const clearedFilters: SearchFilters = {
+      search: '',
+      minPayment: null,
+      maxPayment: null,
+      maxHours: null,
+      hasApplications: '',
+      sortBy: 'date',
+      sortOrder: 'desc'
+    };
+    setFilters(clearedFilters);
+    setCurrentPage(1);
+    fetchData(clearedFilters);
+  };
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem' }}>
@@ -67,129 +129,7 @@ export function OfferingsPage() {
       </div>
 
       {/* Search and Filter Section */}
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(10px)',
-        borderRadius: '1rem',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        padding: '2rem',
-        marginBottom: '2rem'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-            borderRadius: '0.75rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>Find Local Jobs</h2>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ position: 'relative' }}>
-              <div style={{ 
-                position: 'absolute', 
-                top: '50%', 
-                left: '1rem', 
-                transform: 'translateY(-50%)',
-                pointerEvents: 'none'
-              }}>
-                <svg width="20" height="20" fill="none" stroke="#9ca3af" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <input 
-                placeholder="Search jobs by keywords..." 
-                value={q} 
-                onChange={(e) => setQ(e.target.value)} 
-                style={{
-                  width: '100%',
-                  paddingLeft: '3rem',
-                  paddingRight: '1rem',
-                  paddingTop: '1rem',
-                  paddingBottom: '1rem',
-                  background: 'rgba(249, 250, 251, 0.5)',
-                  border: '1px solid rgba(229, 231, 235, 0.5)',
-                  borderRadius: '0.75rem',
-                  fontSize: '1.125rem',
-                  outline: 'none',
-                  transition: 'all 0.2s'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'rgba(229, 231, 235, 0.5)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <input 
-              placeholder="Min BGN/h" 
-              value={minPay} 
-              onChange={(e) => setMinPay(e.target.value)} 
-              style={{
-                width: '144px',
-                padding: '1rem',
-                background: 'rgba(249, 250, 251, 0.5)',
-                border: '1px solid rgba(229, 231, 235, 0.5)',
-                borderRadius: '0.75rem',
-                outline: 'none',
-                transition: 'all 0.2s'
-              }}
-            />
-            <input 
-              placeholder="Max BGN/h" 
-              value={maxPay} 
-              onChange={(e) => setMaxPay(e.target.value)} 
-              style={{
-                width: '144px',
-                padding: '1rem',
-                background: 'rgba(249, 250, 251, 0.5)',
-                border: '1px solid rgba(229, 231, 235, 0.5)',
-                borderRadius: '0.75rem',
-                outline: 'none',
-                transition: 'all 0.2s'
-              }}
-            />
-            <button 
-              onClick={fetchData} 
-              style={{
-                padding: '1rem 2rem',
-                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                color: 'white',
-                fontWeight: '600',
-                borderRadius: '0.75rem',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-              }}
-            >
-              Search
-            </button>
-          </div>
-        </div>
-      </div>
+      <SearchFilter onSearch={handleSearch} onClear={handleClear} />
 
       {/* Map Section */}
       <div style={{
@@ -340,14 +280,16 @@ export function OfferingsPage() {
               cursor: 'pointer'
             }}
             onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.8)';
-              e.target.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
-              e.target.style.transform = 'translateY(-4px)';
+              const target = e.target as HTMLDivElement;
+              target.style.background = 'rgba(255, 255, 255, 0.8)';
+              target.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
+              target.style.transform = 'translateY(-4px)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.6)';
-              e.target.style.boxShadow = 'none';
-              e.target.style.transform = 'translateY(0)';
+              const target = e.target as HTMLDivElement;
+              target.style.background = 'rgba(255, 255, 255, 0.6)';
+              target.style.boxShadow = 'none';
+              target.style.transform = 'translateY(0)';
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                 <div style={{ flex: 1 }}>
@@ -430,12 +372,14 @@ export function OfferingsPage() {
                   transition: 'all 0.2s'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                  const target = e.target as HTMLButtonElement;
+                  target.style.transform = 'translateY(-2px)';
+                  target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                  const target = e.target as HTMLButtonElement;
+                  target.style.transform = 'translateY(0)';
+                  target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
                 }}>
                   Apply Now
                 </button>
@@ -444,6 +388,107 @@ export function OfferingsPage() {
           ))}
         </div>
       </div>
+
+      {/* Results Count and Pagination */}
+      {!loading && (
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '1rem',
+          padding: '1.5rem',
+          marginTop: '2rem',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem'
+        }}>
+          <div style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+            Showing {items.length} of {totalCount} jobs
+          </div>
+          
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: currentPage === 1 ? 'rgba(229, 231, 235, 0.5)' : 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  color: currentPage === 1 ? '#9ca3af' : 'white',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Previous
+              </button>
+              
+              <div style={{ display: 'flex', gap: '0.25rem' }}>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const page = i + 1;
+                  const isActive = page === currentPage;
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        background: isActive ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'rgba(249, 250, 251, 0.5)',
+                        color: isActive ? 'white' : '#374151',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) {
+                          const target = e.target as HTMLButtonElement;
+                          target.style.background = 'rgba(59, 130, 246, 0.1)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) {
+                          const target = e.target as HTMLButtonElement;
+                          target.style.background = 'rgba(249, 250, 251, 0.5)';
+                        }
+                      }}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: currentPage === totalPages ? 'rgba(229, 231, 235, 0.5)' : 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  color: currentPage === totalPages ? '#9ca3af' : 'white',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
