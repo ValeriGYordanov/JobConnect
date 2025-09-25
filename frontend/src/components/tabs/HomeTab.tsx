@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { MapView } from '../MapView';
 
@@ -12,6 +13,7 @@ type Offering = {
   maxHours: number;
   applicationsCount: number;
   createdAt: string;
+  featured?: boolean;
   requestor?: {
     username: string;
     rating: number;
@@ -29,6 +31,7 @@ type User = {
 };
 
 export function HomeTab() {
+  const navigate = useNavigate();
   const [promoOfferings, setPromoOfferings] = useState<Offering[]>([]);
   const [recentOfferings, setRecentOfferings] = useState<Offering[]>([]);
   const [topUsers, setTopUsers] = useState<User[]>([]);
@@ -46,12 +49,13 @@ export function HomeTab() {
         
         const allOfferings = offeringsResponse.data.offerings || offeringsResponse.data;
         
-        // Get 3 random offerings for promo section
-        const shuffled = [...allOfferings].sort(() => 0.5 - Math.random());
-        setPromoOfferings(shuffled.slice(0, 3));
+        // Get featured offerings for promo section
+        const featuredOfferings = allOfferings.filter(offering => offering.featured === true);
+        setPromoOfferings(featuredOfferings);
         
-        // Get last 5 offerings
-        setRecentOfferings(allOfferings.slice(0, 5));
+        // Get last 5 offerings (excluding featured ones)
+        const nonFeaturedOfferings = allOfferings.filter(offering => offering.featured !== true);
+        setRecentOfferings(nonFeaturedOfferings.slice(0, 5));
         
         // Mock top users data (we'll implement real user stats later)
         setTopUsers([
@@ -157,18 +161,71 @@ export function HomeTab() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {promoOfferings.map((offering) => (
               <div key={offering._id} style={{
-                background: 'rgba(249, 250, 251, 0.7)',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(254, 243, 199, 0.8) 100%)',
                 padding: '1rem',
                 borderRadius: '0.75rem',
-                border: '1px solid rgba(229, 231, 235, 0.5)'
-              }}>
-                <h4 style={{ fontSize: '1rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.5rem' }}>
+                border: '2px solid rgba(245, 158, 11, 0.3)',
+                boxShadow: '0 4px 6px -1px rgba(245, 158, 11, 0.2)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                position: 'relative'
+              }}
+                onClick={() => navigate(`/job/${offering._id}`)}
+                onMouseEnter={(e) => {
+                  const target = e.currentTarget as HTMLDivElement;
+                  target.style.transform = 'translateY(-2px)';
+                  target.style.boxShadow = '0 8px 15px -3px rgba(245, 158, 11, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  const target = e.currentTarget as HTMLDivElement;
+                  target.style.transform = 'translateY(0)';
+                  target.style.boxShadow = '0 4px 6px -1px rgba(245, 158, 11, 0.2)';
+                }}
+              >
+                <div style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  right: '10px',
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  color: 'white',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '0.75rem',
+                  fontSize: '0.625rem',
+                  fontWeight: 'bold',
+                  boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
+                }}>
+                  ⭐ FEATURED
+                </div>
+                <h4 style={{ 
+                  fontSize: '1rem', 
+                  fontWeight: '600', 
+                  color: '#1f2937', 
+                  marginBottom: '0.5rem',
+                  marginTop: '0.5rem'
+                }}>
                   {offering.label}
                 </h4>
-                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                <p style={{ 
+                  fontSize: '0.875rem', 
+                  color: '#6b7280', 
+                  marginBottom: '0.75rem',
+                  lineHeight: '1.4',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden'
+                }}>
                   {offering.description}
                 </p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '0.75rem'
+                }}>
                   <span style={{ fontSize: '0.875rem', color: '#059669', fontWeight: '600' }}>
                     {offering.paymentPerHour} BGN/hour
                   </span>
@@ -176,6 +233,36 @@ export function HomeTab() {
                     {offering.applicationsCount} applications
                   </span>
                 </div>
+                <button style={{
+                  width: '100%',
+                  padding: '0.5rem 1rem',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                  color: 'white',
+                  fontWeight: '600',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
+                  transition: 'all 0.2s'
+                }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/job/${offering._id}`);
+                  }}
+                  onMouseEnter={(e) => {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.transform = 'translateY(-1px)';
+                    target.style.boxShadow = '0 4px 8px -1px rgba(0, 0, 0, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    const target = e.target as HTMLButtonElement;
+                    target.style.transform = 'translateY(0)';
+                    target.style.boxShadow = '0 2px 4px -1px rgba(0, 0, 0, 0.1)';
+                  }}
+                >
+                  View Details
+                </button>
               </div>
             ))}
           </div>
@@ -210,8 +297,24 @@ export function HomeTab() {
                 border: '1px solid rgba(229, 231, 235, 0.5)',
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
+                alignItems: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+                onClick={() => navigate(`/job/${offering._id}`)}
+                onMouseEnter={(e) => {
+                  const target = e.currentTarget as HTMLDivElement;
+                  target.style.background = 'rgba(59, 130, 246, 0.05)';
+                  target.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                  target.style.transform = 'translateX(4px)';
+                }}
+                onMouseLeave={(e) => {
+                  const target = e.currentTarget as HTMLDivElement;
+                  target.style.background = 'rgba(249, 250, 251, 0.7)';
+                  target.style.borderColor = 'rgba(229, 231, 235, 0.5)';
+                  target.style.transform = 'translateX(0)';
+                }}
+              >
                 <div>
                   <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1f2937' }}>
                     {offering.label}

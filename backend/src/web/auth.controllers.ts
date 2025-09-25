@@ -21,7 +21,7 @@ let users: User[] = [
     id: '1',
     username: 'demo',
     email: 'demo@jobconnect.com',
-    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // "demo" hashed
+    password: bcrypt.hashSync('demo', 10), // hash("demo") generated at startup
     rating: 4.8,
     completedJobs: 15,
     createdAt: new Date().toISOString()
@@ -106,7 +106,8 @@ export async function login(req: Request, res: Response) {
     
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors[0].message });
+      const firstIssue = error.issues[0];
+      return res.status(400).json({ error: firstIssue?.message || 'Validation error' });
     }
     
     console.error('Login error:', error);
@@ -164,7 +165,8 @@ export async function register(req: Request, res: Response) {
     
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors[0].message });
+      const firstIssue = error.issues[0];
+      return res.status(400).json({ error: firstIssue?.message || 'Validation error' });
     }
     
     console.error('Registration error:', error);
@@ -228,7 +230,7 @@ export async function createDemoUser(req: Request, res: Response) {
       id: '1',
       username: 'demo',
       email: 'demo@jobconnect.com',
-      password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // "demo" hashed
+      password: await bcrypt.hash('demo', 10), // hash("demo") at request time
       rating: 4.8,
       completedJobs: 15,
       createdAt: new Date().toISOString()

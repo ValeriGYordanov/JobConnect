@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { OfferingModel } from '../domain/offering.model';
 import { UserModel } from '../domain/user.model';
+import { ApplicationModel } from '../domain/application.model';
 
 const listQuerySchema = z.object({
   q: z.string().optional(),
@@ -45,25 +46,121 @@ const createSchema = z.object({
   location: z.object({ lat: z.number(), lng: z.number() }),
   paymentPerHour: z.number().positive(),
   maxHours: z.number().positive(),
-  requestorId: z.string(),
 });
 
 export async function createOffering(req: Request, res: Response) {
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid body' });
-  const { requestorId, ...data } = parsed.data;
+  const data = parsed.data;
 
-  const requestor = await UserModel.findById(requestorId);
-  if (!requestor) return res.status(400).json({ error: 'Invalid requestorId' });
+  // Get user from token (middleware sets req.user)
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+  // For now, we'll use the in-memory user system
+  // In production, this would query the database
+  const requestor = { _id: userId };
 
   const created = await OfferingModel.create({ ...data, requestor: requestor._id });
   res.status(201).json(created);
 }
 
 export async function getOffering(req: Request, res: Response) {
-  const item = await OfferingModel.findById(req.params.id);
+  const item = await OfferingModel.findById(req.params.id).populate('requestor', 'username email rating completedJobs');
   if (!item) return res.status(404).json({ error: 'Not found' });
   res.json(item);
+}
+
+const applySchema = z.object({
+  message: z.string().optional(),
+});
+
+export async function applyToOffering(req: Request, res: Response) {
+  const parsed = applySchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid body' });
+  const { message } = parsed.data;
+
+  const offering = await OfferingModel.findById(req.params.id);
+  if (!offering) return res.status(404).json({ error: 'Offering not found' });
+
+  // Get user from token (middleware sets req.user)
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+  // Check if user already applied
+  const existingApplication = await ApplicationModel.findOne({
+    offering: offering._id,
+    applicant: userId
+  });
+  if (existingApplication) {
+    return res.status(400).json({ error: 'Already applied to this offering' });
+  }
+
+  // Create application
+  const application = await ApplicationModel.create({
+    offering: offering._id,
+    applicant: userId,
+    message
+  });
+
+  // Update applications count
+  await OfferingModel.findByIdAndUpdate(offering._id, {
+    $inc: { applicationsCount: 1 }
+  });
+
+  res.status(201).json({ message: 'Application submitted successfully', application });
+}
+
+const updateSchema = z.object({
+  label: z.string().min(3).optional(),
+  description: z.string().optional(),
+  location: z.object({ lat: z.number(), lng: z.number() }).optional(),
+  paymentPerHour: z.number().positive().optional(),
+  maxHours: z.number().positive().optional(),
+});
+
+export async function updateOffering(req: Request, res: Response) {
+  const parsed = updateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid body' });
+  const data = parsed.data;
+
+  // Get user from token (middleware sets req.user)
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+  const offering = await OfferingModel.findById(req.params.id);
+  if (!offering) return res.status(404).json({ error: 'Offering not found' });
+
+  // Check if user owns this offering
+  if (offering.requestor.toString() !== userId) {
+    return res.status(403).json({ error: 'Not authorized to update this offering' });
+  }
+
+  const updated = await OfferingModel.findByIdAndUpdate(
+    req.params.id,
+    { ...data, updatedAt: new Date() },
+    { new: true }
+  );
+
+  res.json(updated);
+}
+
+export async function deleteOffering(req: Request, res: Response) {
+  // Get user from token (middleware sets req.user)
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+  const offering = await OfferingModel.findById(req.params.id);
+  if (!offering) return res.status(404).json({ error: 'Offering not found' });
+
+  // Check if user owns this offering
+  if (offering.requestor.toString() !== userId) {
+    return res.status(403).json({ error: 'Not authorized to delete this offering' });
+  }
+
+  await OfferingModel.findByIdAndDelete(req.params.id);
+
+  res.json({ message: 'Offering deleted successfully' });
 }
 
 

@@ -22,72 +22,8 @@ export function UsersTab() {
       try {
         setLoading(true);
         
-        // For now, we'll create mock user data since we don't have a users API yet
-        // In the future, this will be: const response = await axios.get('/api/users');
-        const mockUsers: User[] = [
-          {
-            _id: '1',
-            username: 'Alex_Petrov',
-            email: 'alex@example.com',
-            rating: 4.9,
-            completedJobs: 25,
-            createdJobs: 8,
-            createdAt: '2024-01-15T10:00:00Z',
-            lastActive: '2024-09-24T18:30:00Z'
-          },
-          {
-            _id: '2',
-            username: 'Maria_Ivanova',
-            email: 'maria@example.com',
-            rating: 4.8,
-            createdJobs: 12,
-            completedJobs: 18,
-            createdAt: '2024-02-01T10:00:00Z',
-            lastActive: '2024-09-24T17:45:00Z'
-          },
-          {
-            _id: '3',
-            username: 'John_Smith',
-            email: 'john@example.com',
-            rating: 4.7,
-            completedJobs: 15,
-            createdJobs: 6,
-            createdAt: '2024-02-10T10:00:00Z',
-            lastActive: '2024-09-24T16:20:00Z'
-          },
-          {
-            _id: '4',
-            username: 'Elena_Dimitrova',
-            email: 'elena@example.com',
-            rating: 4.6,
-            completedJobs: 12,
-            createdJobs: 15,
-            createdAt: '2024-03-05T10:00:00Z',
-            lastActive: '2024-09-24T15:10:00Z'
-          },
-          {
-            _id: '5',
-            username: 'Petar_Nikolov',
-            email: 'petar@example.com',
-            rating: 4.5,
-            completedJobs: 8,
-            createdJobs: 20,
-            createdAt: '2024-03-20T10:00:00Z',
-            lastActive: '2024-09-24T14:30:00Z'
-          },
-          {
-            _id: '6',
-            username: 'Sofia_Georgieva',
-            email: 'sofia@example.com',
-            rating: 4.4,
-            completedJobs: 6,
-            createdJobs: 4,
-            createdAt: '2024-04-10T10:00:00Z',
-            lastActive: '2024-09-24T13:45:00Z'
-          }
-        ];
-        
-        setUsers(mockUsers);
+        const response = await axios.get('/api/users');
+        setUsers(response.data);
         
       } catch (error) {
         console.error('Error fetching users:', error);
