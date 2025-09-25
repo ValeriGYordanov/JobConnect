@@ -9,6 +9,75 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Get all users endpoint
+app.get('/api/users', (req, res) => {
+  res.json(users);
+});
+
+// Store users in memory
+let users = [
+  {
+    _id: '1',
+    username: 'demo',
+    email: 'demo@jobconnect.com',
+    rating: 4.8,
+    completedJobs: 15,
+    createdJobs: 0,
+    createdAt: new Date().toISOString(),
+    lastActive: new Date().toISOString()
+  },
+  {
+    _id: '2',
+    username: 'ivan_petrov',
+    email: 'ivan.petrov@example.com',
+    rating: 4.9,
+    completedJobs: 23,
+    createdJobs: 2, // Has 2 jobs: mowing yard + house cleaning
+    createdAt: new Date().toISOString(),
+    lastActive: new Date().toISOString()
+  },
+  {
+    _id: '3',
+    username: 'gosho_ivanov',
+    email: 'gosho.ivanov@example.com',
+    rating: 4.7,
+    completedJobs: 18,
+    createdJobs: 2, // Has 2 jobs: moving furniture + computer setup
+    createdAt: new Date().toISOString(),
+    lastActive: new Date().toISOString()
+  },
+  {
+    _id: '4',
+    username: 'stoyanka_gerginova',
+    email: 'stoyanka.gerginova@example.com',
+    rating: 4.6,
+    completedJobs: 12,
+    createdJobs: 2, // Has 2 jobs: garden cleanup + painting
+    createdAt: new Date().toISOString(),
+    lastActive: new Date().toISOString()
+  },
+  {
+    _id: '5',
+    username: 'penko_michev',
+    email: 'penko.michev@example.com',
+    rating: 4.5,
+    completedJobs: 8,
+    createdJobs: 1, // Has 1 job: pet walking
+    createdAt: new Date().toISOString(),
+    lastActive: new Date().toISOString()
+  },
+  {
+    _id: '6',
+    username: 'vlado_shefa',
+    email: 'vlado.shefa@example.com',
+    rating: 4.4,
+    completedJobs: 5,
+    createdJobs: 0, // No jobs created - only applicant
+    createdAt: new Date().toISOString(),
+    lastActive: new Date().toISOString()
+  }
+];
+
 // Store offerings in memory
 let offerings = [
   {
@@ -20,6 +89,8 @@ let offerings = [
     paymentPerHour: 15,
     maxHours: 2,
     applicationsCount: 3,
+    requestor: '2', // Ivan Petrov
+    featured: false,
     createdAt: new Date().toISOString()
   },
   {
@@ -31,6 +102,8 @@ let offerings = [
     paymentPerHour: 20,
     maxHours: 3,
     applicationsCount: 1,
+    requestor: '3', // Gosho Ivanov
+    featured: false,
     createdAt: new Date().toISOString()
   },
   {
@@ -42,6 +115,8 @@ let offerings = [
     paymentPerHour: 12,
     maxHours: 4,
     applicationsCount: 0,
+    requestor: '4', // Stoyanka Gerginova
+    featured: false,
     createdAt: new Date().toISOString()
   },
   {
@@ -53,6 +128,8 @@ let offerings = [
     paymentPerHour: 10,
     maxHours: 1,
     applicationsCount: 5,
+    requestor: '5', // Penko Michev
+    featured: false,
     createdAt: new Date().toISOString()
   },
   {
@@ -64,6 +141,61 @@ let offerings = [
     paymentPerHour: 18,
     maxHours: 5,
     applicationsCount: 2,
+    requestor: '2', // Ivan Petrov (second job)
+    featured: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: '6',
+    type: 'job',
+    label: 'Computer setup and troubleshooting',
+    description: 'Need help setting up a new computer and installing software.',
+    location: { lat: 42.6980, lng: 23.3220 },
+    paymentPerHour: 25,
+    maxHours: 3,
+    applicationsCount: 1,
+    requestor: '3', // Gosho Ivanov (second job)
+    featured: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: '7',
+    type: 'job',
+    label: 'Painting a small room',
+    description: 'Help with painting a bedroom, all materials provided.',
+    location: { lat: 42.6930, lng: 23.3215 },
+    paymentPerHour: 16,
+    maxHours: 6,
+    applicationsCount: 0,
+    requestor: '4', // Stoyanka Gerginova (second job)
+    featured: false,
+    createdAt: new Date().toISOString()
+  },
+  // Featured Jobs - Created by Gosho Ivanov (ID: 3)
+  {
+    _id: '8',
+    type: 'job',
+    label: 'Premium Home Renovation Project',
+    description: 'Looking for skilled professionals to help with a complete home renovation. This is a high-paying, long-term project requiring expertise in multiple areas. Perfect for experienced contractors or handymen.',
+    location: { lat: 42.7000, lng: 23.3300 },
+    paymentPerHour: 35,
+    maxHours: 40,
+    applicationsCount: 8,
+    requestor: '3', // Gosho Ivanov
+    featured: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: '9',
+    type: 'job',
+    label: 'Luxury Garden Design & Landscaping',
+    description: 'Transform our backyard into a beautiful garden paradise. We need creative and experienced landscapers who can design and implement a stunning outdoor space. All materials and tools will be provided.',
+    location: { lat: 42.7050, lng: 23.3350 },
+    paymentPerHour: 30,
+    maxHours: 25,
+    applicationsCount: 12,
+    requestor: '3', // Gosho Ivanov
+    featured: true,
     createdAt: new Date().toISOString()
   }
 ];
@@ -74,9 +206,17 @@ app.post('/api/offerings', (req, res) => {
     _id: (offerings.length + 1).toString(),
     ...req.body,
     requestor: '1', // For demo purposes, assign all new jobs to user '1'
+    featured: false, // New jobs are not featured by default
     createdAt: new Date().toISOString()
   };
   offerings.push(newOffering);
+  
+  // Update the user's createdJobs count
+  const user = users.find(u => u._id === '1');
+  if (user) {
+    user.createdJobs += 1;
+  }
+  
   res.status(201).json(newOffering);
 });
 
@@ -165,18 +305,21 @@ app.get('/api/offerings/:id', (req, res) => {
     return res.status(404).json({ error: 'Not found' });
   }
   
-  // Add requestor information for demo
-  const requestor = {
-    _id: '1',
-    username: 'demo',
-    email: 'demo@jobconnect.com',
-    rating: 4.8,
-    completedJobs: 15
-  };
+  // Find the actual requestor from users array
+  const requestor = users.find(u => u._id === offering.requestor);
+  if (!requestor) {
+    return res.status(404).json({ error: 'Requestor not found' });
+  }
   
   res.json({
     ...offering,
-    requestor
+    requestor: {
+      _id: requestor._id,
+      username: requestor.username,
+      email: requestor.email,
+      rating: requestor.rating,
+      completedJobs: requestor.completedJobs
+    }
   });
 });
 
@@ -229,9 +372,17 @@ app.delete('/api/offerings/:id', (req, res) => {
     return res.status(404).json({ error: 'Offering not found' });
   }
   
+  const offering = offerings[offeringIndex];
+  
   // For demo purposes, allow deletion of any offering
   // In production, you'd check if the user owns this offering
   offerings.splice(offeringIndex, 1);
+  
+  // Update the user's createdJobs count
+  const user = users.find(u => u._id === offering.requestor);
+  if (user && user.createdJobs > 0) {
+    user.createdJobs -= 1;
+  }
   
   res.json({ message: 'Offering deleted successfully' });
 });
@@ -270,19 +421,26 @@ app.post('/api/auth/login', (req, res) => {
 app.post('/api/auth/register', (req, res) => {
   const { username, email, password } = req.body;
   
-  if (username === 'demo' && email === 'demo@jobconnect.com') {
+  // Check if user already exists
+  const existingUser = users.find(u => u.username === username || u.email === email);
+  if (existingUser) {
     res.status(400).json({ error: 'User already exists' });
     return;
   }
   
   const newUser = {
-    id: (offerings.length + 1).toString(),
+    _id: (users.length + 1).toString(),
     username,
     email,
     rating: 5.0,
     completedJobs: 0,
-    createdAt: new Date().toISOString()
+    createdJobs: 0,
+    createdAt: new Date().toISOString(),
+    lastActive: new Date().toISOString()
   };
+  
+  // Add user to in-memory store
+  users.push(newUser);
   
   res.cookie('token', 'demo-token-123', {
     httpOnly: true,
@@ -293,7 +451,14 @@ app.post('/api/auth/register', (req, res) => {
   
   res.status(201).json({
     message: 'Registration successful',
-    user: newUser,
+    user: {
+      id: newUser._id,
+      username: newUser.username,
+      email: newUser.email,
+      rating: newUser.rating,
+      completedJobs: newUser.completedJobs,
+      createdAt: newUser.createdAt
+    },
     token: 'demo-token-123'
   });
 });

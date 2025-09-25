@@ -22,7 +22,19 @@ type Offering = {
   };
 };
 
-export function JobDetailsPage() {
+type User = {
+  id: string;
+  username: string;
+  email: string;
+  rating: number;
+  completedJobs: number;
+};
+
+interface JobDetailsPageProps {
+  user?: User | null;
+}
+
+export function JobDetailsPage({ user }: JobDetailsPageProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [job, setJob] = useState<Offering | null>(null);
@@ -140,6 +152,9 @@ export function JobDetailsPage() {
   }
 
   const totalPayment = job.paymentPerHour * job.maxHours;
+  
+  // Check if current user is the job owner
+  const isJobOwner = user && job && user.id === job.requestor._id;
 
   return (
     <div style={{
@@ -355,67 +370,184 @@ export function JobDetailsPage() {
             flexDirection: 'column',
             gap: '1.5rem'
           }}>
-            {/* Apply Button */}
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(10px)',
-              borderRadius: '1rem',
-              padding: '2rem',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              textAlign: 'center'
-            }}>
-              <h3 style={{
-                fontSize: '1.25rem',
-                fontWeight: 'bold',
-                color: '#1f2937',
-                marginBottom: '1rem'
+            {/* Job Actions - Different based on ownership */}
+            {isJobOwner ? (
+              /* Job Owner Actions */
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '1rem',
+                padding: '2rem',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                textAlign: 'center'
               }}>
-                Ready to Apply?
-              </h3>
-              <p style={{
-                color: '#6b7280',
-                marginBottom: '1.5rem',
-                fontSize: '0.875rem'
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: 'bold',
+                  color: '#1f2937',
+                  marginBottom: '1rem'
+                }}>
+                  Manage Your Job
+                </h3>
+                <p style={{
+                  color: '#6b7280',
+                  marginBottom: '1.5rem',
+                  fontSize: '0.875rem'
+                }}>
+                  You posted this job offering
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <button
+                    onClick={() => navigate(`/my-jobs`)}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1.5rem',
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                      color: 'white',
+                      fontWeight: '600',
+                      borderRadius: '0.75rem',
+                      border: 'none',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.2s',
+                      fontSize: '0.875rem'
+                    }}
+                    onMouseEnter={(e) => {
+                      const target = e.target as HTMLButtonElement;
+                      target.style.transform = 'translateY(-2px)';
+                      target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      const target = e.target as HTMLButtonElement;
+                      target.style.transform = 'translateY(0)';
+                      target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                    }}
+                  >
+                    Edit Job
+                  </button>
+                  <button
+                    onClick={() => {
+                      // TODO: Implement view applicants functionality
+                      alert('View applicants functionality coming soon!');
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1.5rem',
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: 'white',
+                      fontWeight: '600',
+                      borderRadius: '0.75rem',
+                      border: 'none',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.2s',
+                      fontSize: '0.875rem'
+                    }}
+                    onMouseEnter={(e) => {
+                      const target = e.target as HTMLButtonElement;
+                      target.style.transform = 'translateY(-2px)';
+                      target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      const target = e.target as HTMLButtonElement;
+                      target.style.transform = 'translateY(0)';
+                      target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                    }}
+                  >
+                    View Applicants ({job.applicationsCount})
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Apply Button for non-owners */
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '1rem',
+                padding: '2rem',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                textAlign: 'center'
               }}>
-                Earn up to {totalPayment} BGN for this job
-              </p>
-              <button
-                onClick={handleApply}
-                disabled={applying}
-                style={{
-                  width: '100%',
-                  padding: '1rem 2rem',
-                  background: applying 
-                    ? 'rgba(156, 163, 175, 0.5)' 
-                    : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  color: 'white',
-                  fontWeight: '600',
-                  borderRadius: '0.75rem',
-                  border: 'none',
-                  cursor: applying ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  transition: 'all 0.2s',
-                  fontSize: '1rem'
-                }}
-                onMouseEnter={(e) => {
-                  if (!applying) {
-                    const target = e.target as HTMLButtonElement;
-                    target.style.transform = 'translateY(-2px)';
-                    target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!applying) {
-                    const target = e.target as HTMLButtonElement;
-                    target.style.transform = 'translateY(0)';
-                    target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                  }
-                }}
-              >
-                {applying ? 'Applying...' : 'Apply Now'}
-              </button>
-            </div>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: 'bold',
+                  color: '#1f2937',
+                  marginBottom: '1rem'
+                }}>
+                  Ready to Apply?
+                </h3>
+                <p style={{
+                  color: '#6b7280',
+                  marginBottom: '1.5rem',
+                  fontSize: '0.875rem'
+                }}>
+                  Earn up to {totalPayment} BGN for this job
+                </p>
+                {user ? (
+                  <button
+                    onClick={handleApply}
+                    disabled={applying}
+                    style={{
+                      width: '100%',
+                      padding: '1rem 2rem',
+                      background: applying 
+                        ? 'rgba(156, 163, 175, 0.5)' 
+                        : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: 'white',
+                      fontWeight: '600',
+                      borderRadius: '0.75rem',
+                      border: 'none',
+                      cursor: applying ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.2s',
+                      fontSize: '1rem'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!applying) {
+                        const target = e.target as HTMLButtonElement;
+                        target.style.transform = 'translateY(-2px)';
+                        target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!applying) {
+                        const target = e.target as HTMLButtonElement;
+                        target.style.transform = 'translateY(0)';
+                        target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                      }
+                    }}
+                  >
+                    {applying ? 'Applying...' : 'Apply Now'}
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                      You need to be logged in to apply
+                    </p>
+                    <button
+                      onClick={() => navigate('/login')}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 1.5rem',
+                        background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                        color: 'white',
+                        fontWeight: '600',
+                        borderRadius: '0.75rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.2s',
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      Login to Apply
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Requestor Info */}
             <div style={{

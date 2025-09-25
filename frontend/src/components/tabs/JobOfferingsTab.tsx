@@ -25,6 +25,7 @@ type Offering = {
   maxHours: number;
   applicationsCount: number;
   createdAt: string;
+  featured?: boolean;
   requestor?: {
     username: string;
     rating: number;
@@ -68,15 +69,37 @@ export function JobOfferingsTab() {
 
       const res = await axios.get('/api/offerings', { params });
 
+      let offerings = [];
       if (res.data.offerings) {
-        setItems(res.data.offerings);
+        offerings = res.data.offerings;
         setTotalCount(res.data.total);
         setTotalPages(res.data.totalPages);
       } else {
-        setItems(res.data);
+        offerings = res.data;
         setTotalCount(res.data.length);
         setTotalPages(1);
       }
+
+      // Sort featured jobs first, then by the selected sort criteria
+      const sortedOfferings = offerings.sort((a, b) => {
+        // Featured jobs always come first
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        
+        // Then sort by the selected criteria
+        if (activeFilters.sortBy === 'date') {
+          const dateA = new Date(a.createdAt).getTime();
+          const dateB = new Date(b.createdAt).getTime();
+          return activeFilters.sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+        } else if (activeFilters.sortBy === 'payment') {
+          return activeFilters.sortOrder === 'desc' ? b.paymentPerHour - a.paymentPerHour : a.paymentPerHour - b.paymentPerHour;
+        } else if (activeFilters.sortBy === 'applications') {
+          return activeFilters.sortOrder === 'desc' ? b.applicationsCount - a.applicationsCount : a.applicationsCount - b.applicationsCount;
+        }
+        return 0;
+      });
+
+      setItems(sortedOfferings);
     } catch (e: any) {
       setError(e?.message || 'Failed to load');
     } finally {
@@ -183,31 +206,68 @@ export function JobOfferingsTab() {
         <div style={{ display: 'grid', gap: '1.5rem' }}>
           {items.map((item) => (
             <div key={item._id} style={{
-              background: 'rgba(255, 255, 255, 0.7)',
+              background: item.featured 
+                ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(254, 243, 199, 0.8) 100%)'
+                : 'rgba(255, 255, 255, 0.7)',
               backdropFilter: 'blur(5px)',
               borderRadius: '0.75rem',
               padding: '1.5rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              border: '1px solid rgba(229, 231, 235, 0.5)',
+              boxShadow: item.featured 
+                ? '0 8px 25px -5px rgba(245, 158, 11, 0.3), 0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              border: item.featured 
+                ? '2px solid rgba(245, 158, 11, 0.3)'
+                : '1px solid rgba(229, 231, 235, 0.5)',
               display: 'flex',
               flexDirection: 'column',
               gap: '1rem',
               transition: 'all 0.2s',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              position: 'relative'
             }}
               onClick={() => navigate(`/job/${item._id}`)}
               onMouseEnter={(e) => {
                 const target = e.currentTarget as HTMLDivElement;
                 target.style.transform = 'translateY(-5px)';
-                target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                target.style.boxShadow = item.featured 
+                  ? '0 12px 30px -5px rgba(245, 158, 11, 0.4), 0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                  : '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
               }}
               onMouseLeave={(e) => {
                 const target = e.currentTarget as HTMLDivElement;
                 target.style.transform = 'translateY(0)';
-                target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                target.style.boxShadow = item.featured 
+                  ? '0 8px 25px -5px rgba(245, 158, 11, 0.3), 0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  : '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
               }}
             >
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1f2937' }}>{item.label}</h3>
+              {item.featured && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-8px',
+                  right: '20px',
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '1rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
+                }}>
+                  ⭐ FEATURED
+                </div>
+              )}
+              <h3 style={{ 
+                fontSize: '1.25rem', 
+                fontWeight: 'bold', 
+                color: '#1f2937',
+                marginTop: item.featured ? '0.5rem' : '0'
+              }}>
+                {item.label}
+              </h3>
               <p style={{ color: '#4b5563', fontSize: '0.95rem' }}>{item.description}</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', fontSize: '0.875rem', color: '#4b5563' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
