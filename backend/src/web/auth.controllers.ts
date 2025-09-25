@@ -106,7 +106,8 @@ export async function login(req: Request, res: Response) {
     
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors[0].message });
+      const firstIssue = error.issues[0];
+      return res.status(400).json({ error: firstIssue?.message || 'Validation error' });
     }
     
     console.error('Login error:', error);
@@ -164,7 +165,8 @@ export async function register(req: Request, res: Response) {
     
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors[0].message });
+      const firstIssue = error.issues[0];
+      return res.status(400).json({ error: firstIssue?.message || 'Validation error' });
     }
     
     console.error('Registration error:', error);
