@@ -41,6 +41,8 @@ export function JobDetailsPage({ user }: JobDetailsPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -53,6 +55,22 @@ export function JobDetailsPage({ user }: JobDetailsPageProps) {
       setLoading(true);
       const response = await axios.get(`/api/offerings/${id}`);
       setJob(response.data);
+      
+      // Check if user has applied to this job
+      if (user) {
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            const appliedResponse = await axios.get(`/api/offerings/${id}/applied`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setHasApplied(appliedResponse.data.hasApplied);
+            setApplicationStatus(appliedResponse.data.application?.status || null);
+          }
+        } catch (err) {
+          console.log('Could not check application status:', err);
+        }
+      }
     } catch (err: any) {
       setError(err?.response?.data?.error || 'Failed to load job details');
     } finally {
@@ -69,11 +87,16 @@ export function JobDetailsPage({ user }: JobDetailsPageProps) {
         return;
       }
 
-      // TODO: Implement application API endpoint
-      await axios.post(`/api/offerings/${id}/apply`, {}, {
+      await axios.post(`/api/offerings/${id}/apply`, {
+        message: 'I am interested in this job opportunity.'
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
+      // Update application status
+      setHasApplied(true);
+      setApplicationStatus('pending');
+      
       alert('✅ Application submitted successfully!');
       // Refresh job details to update application count
       fetchJobDetails();
@@ -427,10 +450,7 @@ export function JobDetailsPage({ user }: JobDetailsPageProps) {
                     Edit Job
                   </button>
                   <button
-                    onClick={() => {
-                      // TODO: Implement view applicants functionality
-                      alert('View applicants functionality coming soon!');
-                    }}
+                    onClick={() => navigate(`/job/${job._id}/applicants`)}
                     style={{
                       width: '100%',
                       padding: '0.75rem 1.5rem',
@@ -486,41 +506,63 @@ export function JobDetailsPage({ user }: JobDetailsPageProps) {
                   Earn up to {totalPayment} BGN for this job
                 </p>
                 {user ? (
-                  <button
-                    onClick={handleApply}
-                    disabled={applying}
-                    style={{
+                  hasApplied ? (
+                    <div style={{
                       width: '100%',
                       padding: '1rem 2rem',
-                      background: applying 
-                        ? 'rgba(156, 163, 175, 0.5)' 
-                        : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                       color: 'white',
                       fontWeight: '600',
                       borderRadius: '0.75rem',
-                      border: 'none',
-                      cursor: applying ? 'not-allowed' : 'pointer',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                      transition: 'all 0.2s',
-                      fontSize: '1rem'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!applying) {
-                        const target = e.target as HTMLButtonElement;
-                        target.style.transform = 'translateY(-2px)';
-                        target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!applying) {
-                        const target = e.target as HTMLButtonElement;
-                        target.style.transform = 'translateY(0)';
-                        target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                      }
-                    }}
-                  >
-                    {applying ? 'Applying...' : 'Apply Now'}
-                  </button>
+                      textAlign: 'center',
+                      fontSize: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem'
+                    }}>
+                      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Awaiting Acceptance
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleApply}
+                      disabled={applying}
+                      style={{
+                        width: '100%',
+                        padding: '1rem 2rem',
+                        background: applying 
+                          ? 'rgba(156, 163, 175, 0.5)' 
+                          : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: 'white',
+                        fontWeight: '600',
+                        borderRadius: '0.75rem',
+                        border: 'none',
+                        cursor: applying ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.2s',
+                        fontSize: '1rem'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!applying) {
+                          const target = e.target as HTMLButtonElement;
+                          target.style.transform = 'translateY(-2px)';
+                          target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!applying) {
+                          const target = e.target as HTMLButtonElement;
+                          target.style.transform = 'translateY(0)';
+                          target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                        }
+                      }}
+                    >
+                      {applying ? 'Applying...' : 'Apply Now'}
+                    </button>
+                  )
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.5rem' }}>

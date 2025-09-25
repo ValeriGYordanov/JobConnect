@@ -7,6 +7,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { JobDetailsPage } from './pages/JobDetailsPage';
 import { CreateJobPage } from './pages/CreateJobPage';
 import { JobManagementPage } from './pages/JobManagementPage';
+import { ApplicantsPage } from './pages/ApplicantsPage';
 import { SubNavigation } from './components/SubNavigation';
 
 type TabType = 'home' | 'job-offerings' | 'users' | 'placeholder';
@@ -378,8 +379,9 @@ export default function App() {
                 <Route path="/register" element={<RegisterPage setUser={setUser} />} />
                 <Route path="/job/:id" element={<JobDetailsPage user={user} />} />
                 <Route path="/create-job" element={<CreateJobPage />} />
-                <Route path="/my-jobs" element={<JobManagementPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/my-jobs" element={<JobManagementPage user={user} />} />
+                <Route path="/job/:id/applicants" element={<ApplicantsPage />} />
+                <Route path="/profile" element={<ProfilePage onLogout={handleLogout} />} />
                 <Route path="/admin" element={<AdminPage />} />
               </Routes>
             </main>

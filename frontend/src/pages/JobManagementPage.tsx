@@ -16,7 +16,11 @@ type Job = {
   updatedAt?: string;
 };
 
-export function JobManagementPage() {
+interface JobManagementPageProps {
+  user?: any;
+}
+
+export function JobManagementPage({ user }: JobManagementPageProps) {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,8 +37,10 @@ export function JobManagementPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchUserJobs();
-  }, []);
+    if (user) {
+      fetchUserJobs();
+    }
+  }, [user]);
 
   const fetchUserJobs = async () => {
     try {
@@ -45,13 +51,18 @@ export function JobManagementPage() {
         return;
       }
 
-      // For demo purposes, we'll fetch all jobs and filter client-side
-      // In production, you'd have a specific endpoint for user's jobs
+      // First get the current user's profile to get their ID
+      const profileResponse = await axios.get('/api/auth/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const currentUserId = profileResponse.data.user.id;
+
+      // Fetch all jobs and filter by the current user's ID
       const response = await axios.get('/api/offerings');
       const allJobs = response.data.offerings || response.data;
       
-      // Filter jobs created by the current user (demo user has ID '1')
-      const userJobs = allJobs.filter((job: any) => job.requestor?._id === '1' || job.requestor === '1');
+      // Filter jobs created by the current user
+      const userJobs = allJobs.filter((job: any) => job.requestor === currentUserId);
       setJobs(userJobs);
     } catch (err: any) {
       setError(err?.response?.data?.error || 'Failed to load jobs');
