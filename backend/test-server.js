@@ -73,6 +73,7 @@ app.post('/api/offerings', (req, res) => {
   const newOffering = {
     _id: (offerings.length + 1).toString(),
     ...req.body,
+    requestor: '1', // For demo purposes, assign all new jobs to user '1'
     createdAt: new Date().toISOString()
   };
   offerings.push(newOffering);
@@ -155,6 +156,84 @@ app.get('/api/offerings', (req, res) => {
     limit,
     totalPages: Math.ceil(filteredOfferings.length / limit)
   });
+});
+
+// Get individual offering by ID
+app.get('/api/offerings/:id', (req, res) => {
+  const offering = offerings.find(o => o._id === req.params.id);
+  if (!offering) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  
+  // Add requestor information for demo
+  const requestor = {
+    _id: '1',
+    username: 'demo',
+    email: 'demo@jobconnect.com',
+    rating: 4.8,
+    completedJobs: 15
+  };
+  
+  res.json({
+    ...offering,
+    requestor
+  });
+});
+
+// Apply to offering endpoint
+app.post('/api/offerings/:id/apply', (req, res) => {
+  const offering = offerings.find(o => o._id === req.params.id);
+  if (!offering) {
+    return res.status(404).json({ error: 'Offering not found' });
+  }
+  
+  // For demo purposes, just increment the applications count
+  offering.applicationsCount = (offering.applicationsCount || 0) + 1;
+  
+  res.status(201).json({ 
+    message: 'Application submitted successfully',
+    application: {
+      offering: offering._id,
+      applicant: '1',
+      message: req.body.message || '',
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    }
+  });
+});
+
+// Update offering endpoint
+app.put('/api/offerings/:id', (req, res) => {
+  const offeringIndex = offerings.findIndex(o => o._id === req.params.id);
+  if (offeringIndex === -1) {
+    return res.status(404).json({ error: 'Offering not found' });
+  }
+  
+  // For demo purposes, allow updates to any offering
+  // In production, you'd check if the user owns this offering
+  const updatedOffering = {
+    ...offerings[offeringIndex],
+    ...req.body,
+    updatedAt: new Date().toISOString()
+  };
+  
+  offerings[offeringIndex] = updatedOffering;
+  
+  res.json(updatedOffering);
+});
+
+// Delete offering endpoint
+app.delete('/api/offerings/:id', (req, res) => {
+  const offeringIndex = offerings.findIndex(o => o._id === req.params.id);
+  if (offeringIndex === -1) {
+    return res.status(404).json({ error: 'Offering not found' });
+  }
+  
+  // For demo purposes, allow deletion of any offering
+  // In production, you'd check if the user owns this offering
+  offerings.splice(offeringIndex, 1);
+  
+  res.json({ message: 'Offering deleted successfully' });
 });
 
 // Auth routes for demo

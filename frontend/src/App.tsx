@@ -1,9 +1,12 @@
 import './index.css';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-// import { ProfilePage } from './pages/ProfilePage';
+import { ProfilePage } from './pages/ProfilePage';
 import { AdminPage } from './pages/AdminPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { JobDetailsPage } from './pages/JobDetailsPage';
+import { CreateJobPage } from './pages/CreateJobPage';
+import { JobManagementPage } from './pages/JobManagementPage';
 import { SubNavigation } from './components/SubNavigation';
 
 type TabType = 'home' | 'job-offerings' | 'users' | 'placeholder';
@@ -291,6 +294,57 @@ export default function App() {
                     >
                       Profile
                     </Link>
+                    <Link 
+                      to="/my-jobs" 
+                      style={{ 
+                        padding: '0.75rem 1.5rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        color: '#374151',
+                        textDecoration: 'none',
+                        borderRadius: '0.5rem',
+                        transition: 'all 0.2s',
+                        background: 'transparent'
+                      }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLAnchorElement;
+                            target.style.background = '#eff6ff';
+                            target.style.color = '#2563eb';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLAnchorElement;
+                            target.style.background = 'transparent';
+                            target.style.color = '#374151';
+                          }}
+                    >
+                      My Jobs
+                    </Link>
+                    <Link 
+                      to="/create-job" 
+                      style={{ 
+                        padding: '0.75rem 1.5rem',
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        color: 'white',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        borderRadius: '0.75rem',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.2s'
+                      }}
+                          onMouseEnter={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.transform = 'translateY(-2px)';
+                            target.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.transform = 'translateY(0)';
+                            target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                          }}
+                    >
+                      Create a Job
+                    </Link>
                     <button
                       onClick={addDemoData}
                       style={{ 
@@ -443,7 +497,10 @@ export default function App() {
                 } />
                 <Route path="/login" element={<LoginPage setUser={setUser} />} />
                 <Route path="/register" element={<RegisterPage setUser={setUser} />} />
-                {/* <Route path="/profile" element={<ProfilePage />} /> */}
+                <Route path="/job/:id" element={<JobDetailsPage />} />
+                <Route path="/create-job" element={<CreateJobPage />} />
+                <Route path="/my-jobs" element={<JobManagementPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/admin" element={<AdminPage />} />
               </Routes>
             </main>

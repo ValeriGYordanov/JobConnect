@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { MapView } from '../MapView';
 import { SearchFilter } from '../SearchFilter';
@@ -31,6 +32,7 @@ type Offering = {
 };
 
 export function JobOfferingsTab() {
+  const navigate = useNavigate();
   const [items, setItems] = useState<Offering[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -190,8 +192,10 @@ export function JobOfferingsTab() {
               display: 'flex',
               flexDirection: 'column',
               gap: '1rem',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              cursor: 'pointer'
             }}
+              onClick={() => navigate(`/job/${item._id}`)}
               onMouseEnter={(e) => {
                 const target = e.currentTarget as HTMLDivElement;
                 target.style.transform = 'translateY(-5px)';
@@ -211,7 +215,7 @@ export function JobOfferingsTab() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  Sofia, Bulgaria
+                  {item.location.lat.toFixed(4)}, {item.location.lng.toFixed(4)}
                 </span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                   <svg width="16" height="16" fill="none" stroke="#6b7280" viewBox="0 0 24 24">
@@ -243,6 +247,10 @@ export function JobOfferingsTab() {
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 transition: 'all 0.2s'
               }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/job/${item._id}`);
+                }}
                 onMouseEnter={(e) => {
                   const target = e.target as HTMLButtonElement;
                   target.style.transform = 'translateY(-2px)';
@@ -253,7 +261,7 @@ export function JobOfferingsTab() {
                   target.style.transform = 'translateY(0)';
                   target.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
                 }}>
-                Apply Now
+                View Details
               </button>
             </div>
           ))}
